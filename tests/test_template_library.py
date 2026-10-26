@@ -26,7 +26,9 @@ def test_database_templates_render_with_optional_metadata_missing(template):
 
 
 def test_audit_template_matches_supplied_event():
-    event = json.loads((Path(__file__).parents[1] / "examples/postgres_audit_event.json").read_text())
+    event = json.loads(
+        (Path(__file__).parents[1] / "examples/postgres_audit_event.json").read_text(encoding="utf-8")
+    )
     template = database_templates()[0]
     assert render(template["title"], event) == "🟡 ❗ [Postgres Audit Alert] lenden-prod-db-dr-01"
     output = render(template["text"], event)
@@ -64,3 +66,12 @@ def test_library_templates_edit_and_preview_in_console_api(client):
             },
         )
         assert preview.status_code == 200, preview.text
+
+
+def test_template_library_ignores_legacy_locale(monkeypatch):
+    import io
+
+    # Reproduce Path.read_text() defaults on Windows without requiring Windows.
+    monkeypatch.setattr(io, "text_encoding", lambda encoding, stacklevel=2: encoding or "cp1252")
+    template = database_templates()[0]
+    assert "🟡" in render(template["title"], {"severity": "WARNING", "title": "Unicode", "metadata": {}})

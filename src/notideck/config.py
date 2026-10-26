@@ -13,7 +13,7 @@ from platformdirs import user_data_path
 def private_write(path: Path, text: str) -> None:
     temporary = path.with_suffix(".tmp")
     fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(fd, "w") as stream:
+    with os.fdopen(fd, "w", encoding="utf-8") as stream:
         stream.write(text)
         stream.flush()
         os.fsync(stream.fileno())
@@ -33,7 +33,7 @@ class Config:
             if not key:
                 if not key_path.exists():
                     private_write(key_path, Fernet.generate_key().decode())
-                key = key_path.read_text().strip()
+                key = key_path.read_text(encoding="utf-8").strip()
             self.cipher = Fernet(key.encode())
             self.token_path = self.directory / "bootstrap.token"
             if not self.token_path.exists():
@@ -41,7 +41,7 @@ class Config:
         self.reload()
 
     def reload(self):
-        self.values = json.loads(self.path.read_text()) if self.path.exists() else {}
+        self.values = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
 
     @property
     def database_url(self):

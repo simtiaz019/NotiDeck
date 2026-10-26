@@ -10,7 +10,7 @@ from notideck.services import audit
 
 
 def database_templates():
-    return json.loads(files("notideck").joinpath("templates/database-alerts.json").read_text())
+    return json.loads(files("notideck").joinpath("templates/database-alerts.json").read_text(encoding="utf-8"))
 
 
 def install_database_templates(db, actor):

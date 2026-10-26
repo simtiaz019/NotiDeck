@@ -163,7 +163,9 @@ def create_app(config: Config | None = None):
 
     def bootstrap(request: Request):
         supplied = request.headers.get("X-Bootstrap-Token", "").strip()
-        if not secrets.compare_digest(supplied.encode(), config.token_path.read_text().strip().encode()):
+        if not secrets.compare_digest(
+            supplied.encode(), config.token_path.read_text(encoding="utf-8").strip().encode()
+        ):
             raise HTTPException(
                 403,
                 "Bootstrap token missing or incorrect. Use the bootstrap.token file from this running installation, not a source API key or account password.",
@@ -378,7 +380,11 @@ def create_app(config: Config | None = None):
                     db.add(user)
                     db.add(
                         Template(
-                            **json.loads(files("notideck").joinpath("templates/default.json").read_text())
+                            **json.loads(
+                                files("notideck")
+                                .joinpath("templates/default.json")
+                                .read_text(encoding="utf-8")
+                            )
                         )
                     )
                     install_database_templates(db, value.username)

@@ -123,7 +123,7 @@ def unattended(file: Path, config: Path | None = None):
             content=file.read_bytes(),
             headers={
                 "Content-Type": "application/json",
-                "X-Bootstrap-Token": cfg.token_path.read_text().strip(),
+                "X-Bootstrap-Token": cfg.token_path.read_text(encoding="utf-8").strip(),
             },
         )
     if result.status_code != 200:
