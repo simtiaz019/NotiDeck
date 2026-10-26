@@ -25,9 +25,33 @@ def free_port():
         return s.getsockname()[1]
 
 
+def stop_process(process, timeout):
+    """Reap the interpreter as well as Windows virtualenv launcher children."""
+    if process.poll() is not None:
+        return
+    if os.name == "nt":
+        # Popen may own the venv launcher, whose child loads the native extensions.
+        # Terminating only the launcher leaves that child and its DLL locks alive.
+        result = subprocess.run(
+            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+            capture_output=True,
+            timeout=timeout,
+        )
+        if result.returncode and process.poll() is None:
+            raise RuntimeError("Could not stop Windows smoke-test process tree")
+        process.wait(timeout=timeout)
+    else:
+        process.terminate()
+        try:
+            process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=timeout)
+
+
 def main():
     root = Path(__file__).resolve().parents[1]
-    version = tomllib.loads((root / "pyproject.toml").read_text())["project"]["version"]
+    version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     wheel = root / "dist" / f"notideck-{version}-py3-none-any.whl"
     assert wheel.is_file(), f"Build the current version first: {wheel.name}"
     received = []
@@ -94,7 +118,7 @@ def main():
                         time.sleep(0.1)
                 assert b"NotiDeck" in opener.open(base).read()
                 password = secrets.token_urlsafe(24) + "1!"
-                token = (directory / "config/bootstrap.token").read_text().strip()
+                token = (directory / "config/bootstrap.token").read_text(encoding="utf-8").strip()
                 request(
                     "/api/v1/setup",
                     {
@@ -156,11 +180,11 @@ def main():
                     "PASS: clean wheel install, bundled UI, setup, login, channel, route, ingestion, real worker HTTP delivery, history, queue cancellation"
                 )
             finally:
-                if worker:
-                    worker.terminate()
-                    worker.wait(timeout=40)
-                web.terminate()
-                web.wait(timeout=15)
+                try:
+                    if worker:
+                        stop_process(worker, timeout=40)
+                finally:
+                    stop_process(web, timeout=15)
     receiver.shutdown()
     receiver.server_close()
 
