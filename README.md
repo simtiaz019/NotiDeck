@@ -1,128 +1,163 @@
 # NotiDeck
 
-**One Platform. Every Notification.**
+**One platform. Every notification.**
 
-NotiDeck is a self-hosted notification router with a React administration console,
-FastAPI ingestion API, and durable SQL-backed delivery workers. Version **0.1.0rc1** is the production
-release candidate for final acceptance testing. See
-[implementation status and limitations](docs/limitations.md) before deployment.
+Send an event once. Route it to the right channels. Track every delivery attempt.
 
-[Upgrade to the candidate](docs/upgrade-0.1.0rc1.md) · [Validation results](docs/validation.md) · [Acceptance checklist](IMPLEMENTATION.md)
+NotiDeck is a self-hosted notification hub for application events, database alerts,
+and operational messages. Manage your sources, channels, templates, and delivery queue
+from a web console, with your data stored in your own database.
 
-## What works
+[Get started](#quick-start) · [Documentation](https://github.com/simtiaz019/NotiDeck/tree/main/docs) · [GitHub](https://github.com/simtiaz019/NotiDeck) · [Report an issue](https://github.com/simtiaz019/NotiDeck/issues)
 
-- Token-protected setup, SQLite initialization, administrator creation and login.
-- Argon2id passwords, expiring cookie sessions, CSRF protection and backend RBAC.
-- Sources, scoped/revocable API keys, signed inbound webhooks and idempotent ingestion.
-- Ordered rules, severity comparisons, metadata conditions, groups, simulation and templates.
-- Encrypted channel configurations and real provider adapters for Telegram, SMTP,
-  Slack, Discord, HTTP webhooks, WhatsApp templates, Twilio SMS and a Signal bridge.
-- Durable delivery jobs, independent attempt history, leases, retries, throttling,
-  dead letters, pause/resume, previewed queue cancellation and audit records.
-- Console setup, overview, searchable history, queue, channels, routes, sources,
-  recipients, groups, templates, users, audits and settings, with light/dark appearance.
-- CLI, bundled frontend assets, Alembic migrations, optional database drivers,
-  provider plugins and container/release workflow definitions.
+**Release status:** NotiDeck is currently a pre-release. Install with `--pre` and review
+[deployment guidance](https://github.com/simtiaz019/NotiDeck/blob/main/docs/deployment.md)
+before using it in production.
 
-```mermaid
-flowchart LR
-    App[External applications] -->|API key / signed webhook| API[FastAPI ingestion]
-    UI[NotiDeck Console] -->|Session + CSRF| API
-    API --> Rules[Rules and templates]
-    Rules --> DB[(SQL database: events + jobs)]
-    DB --> Worker[Leased worker processes]
-    Worker --> Providers[Provider adapters]
-    Providers --> Destinations[Telegram / Email / Slack / other channels]
-    Worker --> DB
-```
+## Quick start
 
-## Install and run
+You need **Python 3.11 or newer**. The installed package includes the web console;
+Node.js is only needed when building from source. SQLite is the simplest way to try it.
 
-Python 3.11+ is required. No Node.js is needed by wheel users.
+**1. Install in a virtual environment**
 
 ```sh
-# Install the locally built release (this repository has NOT been published to PyPI):
-python -m pip install dist/notideck-0.1.0rc1-py3-none-any.whl
+python -m venv .venv
+```
+
+Activate it on macOS/Linux with `source .venv/bin/activate`, or in Windows PowerShell
+with `.venv\Scripts\Activate.ps1`. Then install and start NotiDeck:
+
+```sh
+python -m pip install --pre notideck
 notideck serve
 ```
 
-Open **http://127.0.0.1:8000**. The terminal shows the private bootstrap token file
-path. Read that file locally and paste the token into the setup wizard. Choose a
-database, test it, create your administrator and finish setup. No default accounts
-or passwords exist. The default SQLite database is stored in the OS application
-data directory, not in your current working directory.
+**2. Complete browser setup**
 
-After setup, run a worker in a second terminal:
+Open **http://127.0.0.1:8000**. The terminal prints the location of your private
+`bootstrap.token` file. Copy its contents into the setup wizard, choose your database,
+and create your administrator account. Keep this token private; it is different from a source API key.
+
+**3. Start delivery processing**
+
+In a second terminal, activate the same virtual environment and run:
 
 ```sh
 notideck worker
-# Alternatively, restart the local server with its managed child worker:
-notideck serve --embedded-worker
 ```
 
-The intended published installation command is `pip install notideck`; publication
-requires a separately authorized release and confirmed PyPI project ownership.
+Leave both processes running: the server receives events and serves the console;
+the worker sends queued notifications.
+
+## What you can do
+
+- **Connect your applications:** submit events using source API keys or signed webhooks.
+- **Choose who gets notified:** route by severity, environment, tags, or event metadata.
+- **Make alerts readable:** use templates for database errors, replication lag, backups, and more.
+- **Keep track of delivery:** inspect attempts, retries, failures, and queued notifications.
+- **Stay in control:** pause dispatch, retry failed jobs, and cancel pending jobs from the console.
+
+## How it works
+
+![Notification flow: your application sends an event to NotiDeck, routing rules select channels, a persistent queue holds deliveries, and workers send them to email, chat, or webhook destinations.](https://raw.githubusercontent.com/simtiaz019/NotiDeck/main/docs/images/notification-flow.png)
+
+1. Your application submits an event with a title, message, severity, and optional metadata.
+2. NotiDeck matches your routing rules and saves the notification and delivery jobs.
+3. A worker sends each delivery and records the result. Retryable failures are rescheduled.
 
 ## Send your first notification
 
-1. Create a channel and use **Test** to make a real test send.
-2. Create a routing rule with a destination channel. For example,
-   `environment equals production` AND `severity gte ERROR`.
-3. Register a source and create its API key. Copy the key immediately.
-4. Submit an event, then inspect Notifications and Queue.
+In the console:
+
+1. Add a **Channel**, configure its credentials, and use **Test** to check delivery.
+2. Add a **Routing rule** targeting that channel. For this example, match
+   `environment equals production` and `severity gte ERROR`.
+3. Add a **Source** and create its API key. Copy the key when it is displayed.
+4. Submit an event and open **Notifications** to inspect the result.
+
+Example for macOS/Linux:
 
 ```sh
-export NOTIDECK_API_KEY='replace-with-your-created-key'
+export NOTIDECK_API_KEY='replace-with-your-source-api-key'
+
 curl -X POST http://127.0.0.1:8000/api/v1/notifications \
   -H "Authorization: Bearer $NOTIDECK_API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{"environment":"production","severity":"CRITICAL","title":"Replication lag", "message":"Lag exceeded 120 seconds.","idempotency_key":"replication-123"}'
+  -d '{
+    "environment": "production",
+    "severity": "ERROR",
+    "title": "Database replication lag",
+    "message": "Replication lag exceeded 120 seconds.",
+    "idempotency_key": "replication-alert-001"
+  }'
 ```
 
-HTTP 202 acknowledges durable persistence, not recipient delivery. `SENT` means
-provider acceptance. Delivery is **at least once**; a crash after acceptance may
-cause duplicate sends. Queue clearing cancels eligible jobs and preserves history.
+A `202` response means the event was saved. A delivery marked `SENT` means the provider
+accepted it; it does not confirm that the recipient read or received it. Delivery is
+at least once, so a crash after provider acceptance can cause a duplicate send.
 
-## Docker
+## Channels and databases
+
+| Channel | Verification so far |
+| --- | --- |
+| Email (SMTP), Telegram | Live delivery confirmed during user testing |
+| HTTP webhook | Real HTTP delivery covered by automated smoke tests |
+| Slack, Discord, WhatsApp templates, Twilio SMS, Signal bridge | Adapters included; live account testing still needed |
+
+See [channel setup](https://github.com/simtiaz019/NotiDeck/blob/main/docs/channels.md)
+for provider requirements and configuration.
+
+| Database | Installation |
+| --- | --- |
+| SQLite | Included; use one worker thread and local storage |
+| PostgreSQL | `python -m pip install --pre "notideck[postgres]"` |
+| MySQL | `python -m pip install --pre "notideck[mysql]"` |
+| Oracle | Experimental; see the [support boundaries](https://github.com/simtiaz019/NotiDeck/blob/main/docs/limitations.md) |
+
+PostgreSQL setup includes a TLS/SSL switch. Leave it unchecked for a server that does
+not use TLS. When enabled, certificate and hostname verification is the default.
+
+## Prefer Docker?
+
+Docker Compose runs the server and worker with a shared persistent data volume.
 
 ```sh
+git clone https://github.com/simtiaz019/NotiDeck.git
+cd NotiDeck
 docker compose up --build -d web
-# Complete setup in the browser, then:
-docker compose up -d worker
+docker compose exec web cat /data/bootstrap.token
 ```
 
-The private bootstrap token is at `/data/bootstrap.token` inside the web container:
-`docker compose exec web cat /data/bootstrap.token`. Keep that token private.
-A PostgreSQL example is provided in `docker-compose.postgres.yml`.
-
-## Development
+Open **http://127.0.0.1:8000**, enter the bootstrap token, and finish setup. Then start the worker:
 
 ```sh
-python3.12 -m venv .venv
-. .venv/bin/activate
-pip install -e '.[dev]'
-npm --prefix frontend ci
-npm --prefix frontend run build
-pytest
-npm --prefix frontend test
-ruff check src tests
-mypy src/notideck
-python -m build
+docker compose up --build -d worker
 ```
 
-Dependency ranges live in `pyproject.toml`, the tested Python development snapshot
-in `requirements-dev.lock`, and the frontend dependency graph in `frontend/package-lock.json`.
-See [development](docs/development.md) for optional live database tests.
+The web port is bound to localhost. Keep the data volume and encryption key backed up;
+`docker compose down -v` deletes the volume. See the
+[deployment guide](https://github.com/simtiaz019/NotiDeck/blob/main/docs/deployment.md)
+for PostgreSQL, HTTPS, supervision, and backups.
 
-## Documentation
+## A console for everyday operations
 
-[Installation](docs/installation.md) · [Configuration](docs/configuration.md) ·
-[API](docs/api.md) · [Channels](docs/channels.md) · [Routing](docs/routing.md) · [Notification templates](docs/notification-templates.md) ·
-[Deployment](docs/deployment.md) · [Security](docs/security.md) ·
-[Plugin API](docs/plugins.md) · [Release checklist](docs/release.md)
+View recent events, find failed deliveries, manage channels and routing rules, and
+inspect the queue without writing SQL.
 
-Licensed under Apache-2.0. Contributions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md).
-The screenshot below was generated by the local browser test with synthetic test data.
-Live-provider certification is not claimed.
+![NotiDeck web console showing notification totals, recent events, and severity breakdown.](https://raw.githubusercontent.com/simtiaz019/NotiDeck/main/docs/console-tested.png)
 
-![NotiDeck Console after a browser test](docs/console-tested.png)
+*Console screenshot uses synthetic demonstration data.*
+
+## Learn more
+
+| I want to… | Guide |
+| --- | --- |
+| Install or configure NotiDeck | [Installation](https://github.com/simtiaz019/NotiDeck/blob/main/docs/installation.md) · [Configuration](https://github.com/simtiaz019/NotiDeck/blob/main/docs/configuration.md) |
+| Integrate an application | [API](https://github.com/simtiaz019/NotiDeck/blob/main/docs/api.md) · [Routing](https://github.com/simtiaz019/NotiDeck/blob/main/docs/routing.md) |
+| Customize messages | [Notification templates](https://github.com/simtiaz019/NotiDeck/blob/main/docs/notification-templates.md) |
+| Deploy safely | [Deployment](https://github.com/simtiaz019/NotiDeck/blob/main/docs/deployment.md) · [Security](https://github.com/simtiaz019/NotiDeck/blob/main/docs/security.md) |
+| Understand current scope | [Support boundaries](https://github.com/simtiaz019/NotiDeck/blob/main/docs/limitations.md) · [Changelog](https://github.com/simtiaz019/NotiDeck/blob/main/CHANGELOG.md) |
+| Contribute or build a provider | [Development](https://github.com/simtiaz019/NotiDeck/blob/main/docs/development.md) · [Provider plugins](https://github.com/simtiaz019/NotiDeck/blob/main/docs/plugins.md) |
+
+NotiDeck is licensed under [Apache-2.0](https://github.com/simtiaz019/NotiDeck/blob/main/LICENSE).

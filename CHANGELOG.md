@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0rc2 — unreleased
+
+- Redesign the PyPI/GitHub README around installation, first delivery and operational use.
+- Replace the unsupported Mermaid block with a static PNG flowchart and link all documentation/images with absolute URLs.
+- Replace obsolete local-wheel instructions with published-package installation commands.
+- No runtime behavior changes from the published 0.1.0rc1 release.
+
 ## 0.1.0rc1 — 2026-10-26
 
 Production release candidate; final maintainer acceptance and publication pending.

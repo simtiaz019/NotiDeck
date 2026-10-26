@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="590" viewBox="0 0 900 590" role="img" aria-labelledby="title desc">
+<title id="title">From one event to every destination</title>
+<desc id="desc">Applications send events to NotiDeck. Routing rules create jobs in a persistent queue. Workers send them to channels and record attempts or schedule retries.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#368778" stroke-width="1.8"/></marker></defs>
+<rect width="900" height="590" rx="24" fill="#f3f7f6"/>
+<g font-family="Arial, Helvetica, sans-serif">
+<text x="38" y="47" font-size="14" font-weight="700" fill="#267365" letter-spacing="2">NOTIDECK · NOTIFICATION FLOW</text>
+<text x="38" y="87" font-size="30" font-weight="700" fill="#172c36">One event. The right destinations.</text>
+<text x="38" y="119" font-size="18" fill="#52656e">Configure once in the console. Follow each delivery from the queue.</text>
+<g fill="#fff" stroke="#cfddda" stroke-width="1.5">
+<rect x="38" y="157" width="238" height="142" rx="15"/>
+<rect x="331" y="157" width="238" height="142" rx="15"/>
+<rect x="624" y="157" width="238" height="142" rx="15"/>
+<rect x="624" y="368" width="238" height="142" rx="15"/>
+<rect x="331" y="368" width="238" height="142" rx="15"/>
+<rect x="38" y="368" width="238" height="142" rx="15" fill="#e3f1ec" stroke="#afd2c4"/>
+</g>
+<g fill="#267365" font-size="14" font-weight="700">
+<text x="58" y="188">01 / SUBMIT</text><text x="351" y="188">02 / ROUTE</text><text x="644" y="188">03 / SAVE</text>
+<text x="644" y="399">04 / DISPATCH</text><text x="351" y="399">05 / NOTIFY</text><text x="58" y="399">FOLLOW THE RESULT</text>
+</g>
+<g fill="#172c36" font-size="23" font-weight="700">
+<text x="58" y="222">Your application</text><text x="351" y="222">Routing rules</text><text x="644" y="222">Persistent queue</text>
+<text x="644" y="433">Delivery workers</text><text x="351" y="433">Your channels</text><text x="58" y="433">Delivery history</text>
+</g>
+<g fill="#52656e" font-size="17">
+<text x="58" y="253">API key or signed webhook</text><text x="58" y="278">Title, message, severity</text>
+<text x="351" y="253">Match events to channels</text><text x="351" y="278">Apply message templates</text>
+<text x="644" y="253">Save events and jobs</text><text x="644" y="278">In your own database</text>
+<text x="644" y="464">Send queued messages</text><text x="644" y="489">Reschedule retryable errors</text>
+<text x="351" y="464">Email, Telegram, webhooks</text><text x="351" y="489">And other integrations</text>
+<text x="58" y="464">Inspect attempts and status</text><text x="58" y="489">Manage failures in Console</text>
+</g>
+<g fill="none" stroke="#368778" stroke-width="2.5" marker-end="url(#arrow)">
+<path d="M282 228 H321"/><path d="M575 228 H614"/><path d="M743 305 V358"/>
+<path d="M618 439 H579"/>
+</g>
+<path d="M325 439 H286" stroke="#368778" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="38" y="555" font-size="16" fill="#52656e">Provider acceptance is recorded; recipient delivery is not guaranteed.</text>
+</g></svg>

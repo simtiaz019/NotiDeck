@@ -357,7 +357,7 @@ export function Setup({ onDone }: { onDone: () => void }) {
           <p className="muted">
             {
               [
-                "Let’s set up your notification workspace. Version 0.1.0rc1.",
+                "Let’s set up your notification workspace. Version 0.1.0rc2.",
                 "Your notifications and delivery queue live here.",
                 "No default credentials. This account will manage your workspace.",
                 "Choose the defaults for your installation.",
@@ -1589,7 +1589,7 @@ export function Console({
             <strong>{page}</strong>
           </div>
           <span className="version">
-            <span /> NotiDeck 0.1.0rc1
+            <span /> NotiDeck 0.1.0rc2
           </span>
           <div className="mobile-tools">
             <button
