@@ -1,0 +1,6 @@
+{
+  "name": "Default notification",
+  "title": "[{{ notification.severity }}] {{ notification.title }}",
+  "text": "{{ notification.message }}\nEnvironment: {{ notification.environment }}\nSource: {{ notification.source }}",
+  "html": "<h2>{{ notification.title }}</h2><p>{{ notification.message }}</p><p>Severity: {{ notification.severity }}</p>"
+}

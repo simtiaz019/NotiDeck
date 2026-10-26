@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "notideck"
+version = "0.1.0rc1"
+description = "One Platform. Every Notification. Self-hosted notification routing and delivery."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+keywords = ["notifications", "queue", "fastapi", "self-hosted"]
+classifiers = ["Development Status :: 4 - Beta", "Programming Language :: Python :: 3", "Operating System :: OS Independent"]
+dependencies = [
+ "fastapi>=0.115,<1", "uvicorn>=0.30,<1", "sqlalchemy>=2.0,<2.1",
+ "alembic>=1.13,<2", "pydantic>=2.9,<3", "typer>=0.12,<1",
+ "httpx>=0.27,<1", "httpcore>=1.0,<1.1", "cryptography>=43,<51", "argon2-cffi>=23,<26",
+ "platformdirs>=4,<5", "filelock>=4.2.1,<5", "jinja2>=3.1.6,<4"
+]
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.2,<4"]
+mysql = ["pymysql>=1.1,<2"]
+oracle = ["oracledb>=2.4,<4"]
+all = ["psycopg[binary]>=3.2,<4", "pymysql>=1.1,<2", "oracledb>=2.4,<4"]
+dev = ["pytest>=8,<10", "pytest-cov>=6,<8", "build>=1.2,<2", "ruff>=0.9,<1", "mypy>=1.14,<2"]
+[project.scripts]
+notideck = "notideck.cli:app"
+[project.entry-points."notideck.providers"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/notideck"]
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/frontend", "/tests", "/docs", "/examples", "/*.md", "/LICENSE", "/pyproject.toml", "/requirements-dev.lock", "/Dockerfile", "/docker-compose*.yml", "/Makefile", "/.github", "/.env.example", "/.dockerignore", "/.gitignore"]
+exclude = ["frontend/node_modules"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+[tool.ruff]
+target-version = "py311"
+line-length = 110
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = true

@@ -1,0 +1,61 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Publishing destination (environment approval required)
+        required: true
+        type: choice
+        options: [testpypi, pypi]
+permissions:
+  contents: read
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+  build:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: pip install -e '.[dev]' twine
+      - run: npm --prefix frontend ci
+      - run: npm --prefix frontend run build
+      - run: npm --prefix frontend test
+      - run: ruff check src tests
+      - run: mypy src/notideck
+      - run: pytest
+      - name: Require matching version tag for production PyPI
+        if: inputs.target == 'pypi'
+        run: |
+          test "$GITHUB_REF_TYPE" = tag
+          test "$GITHUB_REF_NAME" = "v$(python -c 'from notideck import __version__; print(__version__)')"
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - run: python tests/wheel_smoke.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions
+          path: dist/*
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: distributions
+          path: dist/
+      - if: inputs.target == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+      - if: inputs.target == 'pypi'
+        uses: pypa/gh-action-pypi-publish@release/v1

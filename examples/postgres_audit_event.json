@@ -1,0 +1,23 @@
+{
+  "source": "PBFTL Prod",
+  "environment": "production",
+  "severity": "WARNING",
+  "category": "postgres-audit",
+  "title": "Postgres Audit Alert",
+  "message": "cannot execute UPDATE in a read-only transaction",
+  "metadata": {
+    "icon": "🟡 ❗",
+    "monitor": "postgres-audit-monitor",
+    "node": "lenden-prod-db-dr-01",
+    "type": "ERROR",
+    "event_time": "2026-10-26 10:42:10.001 +06",
+    "event_created_at": "2026-10-26T04:45:02.943175+00:00",
+    "database": "db_lenden_prod",
+    "user": "user_lenden_prod",
+    "client": "172.24.3.43(53378)",
+    "command": "",
+    "db_severity": "ERROR",
+    "sqlstate": "",
+    "audit_command": ""
+  }
+}

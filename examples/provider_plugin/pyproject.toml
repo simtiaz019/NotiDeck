@@ -1,0 +1,12 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+[project]
+name = "notideck-example-relay"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["notideck>=0.1,<0.2"]
+[project.entry-points."notideck.providers"]
+relay = "notideck_example_relay:Relay"
+[tool.hatch.build.targets.wheel]
+packages = ["notideck_example_relay.py"]

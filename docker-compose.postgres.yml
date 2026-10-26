@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: notideck
+      POSTGRES_USER: notideck
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique PostgreSQL password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notideck -d notideck"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  web:
+    build: .
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["notideck-config:/data"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+  worker:
+    build: .
+    command: ["worker", "--concurrency", "4"]
+    volumes: ["notideck-config:/data"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 45s
+    healthcheck:
+      disable: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+volumes:
+  postgres-data:
+  notideck-config:

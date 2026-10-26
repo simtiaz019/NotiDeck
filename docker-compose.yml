@@ -1,0 +1,25 @@
+services:
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - notideck-data:/data
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+  worker:
+    build: .
+    command: ["worker", "--concurrency", "1"]
+    volumes:
+      - notideck-data:/data
+    restart: unless-stopped
+    stop_grace_period: 45s
+    healthcheck:
+      disable: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+volumes:
+  notideck-data:
