@@ -2,11 +2,24 @@ import hashlib
 import hmac
 import json
 import time
+from types import SimpleNamespace
+
+import pytest
+
+import notideck.security as security
 
 from sqlalchemy import select
 
 from notideck.database.models import APIKey, Channel, Session, User
 from tests.conftest import initialize, send
+
+
+@pytest.fixture
+def rate_clock(monkeypatch):
+    # Replace only the limiter's clock; session expiry and request timing stay real.
+    clock = SimpleNamespace(now=60_059.999)
+    monkeypatch.setattr(security, "time", SimpleNamespace(time=lambda: clock.now))
+    return clock
 
 
 def test_bootstrap_protected_and_restart_safe(raw_client, config):
@@ -150,7 +163,7 @@ def test_sessions_expire_and_password_changes_revoke(client, app):
     assert client.get("/api/v1/auth/me").status_code == 401
 
 
-def test_source_disable_and_rate_limit(client, scenario):
+def test_source_disable_and_rate_limit(client, scenario, rate_clock):
     source = scenario["source"]
     value = {
         k: source[k]
@@ -158,6 +171,10 @@ def test_source_disable_and_rate_limit(client, scenario):
     }
     value["rate_limit"] = 1
     assert client.patch("/api/v1/sources/" + source["id"], json=value).status_code == 200
+    assert send(client, scenario).status_code == 202
+    assert send(client, scenario).status_code == 429
+    # The first request in the next fixed minute is accepted, then limited again.
+    rate_clock.now = 60_060.0
     assert send(client, scenario).status_code == 202
     assert send(client, scenario).status_code == 429
     value["enabled"] = False
@@ -226,7 +243,7 @@ def test_network_allowlist_and_default_source_environment(client, scenario):
     assert send(client, scenario).status_code == 403
 
 
-def test_login_rate_limit(raw_client, config):
+def test_login_rate_limit(raw_client, config, rate_clock):
     assert initialize(raw_client, config).status_code == 200
     for _ in range(10):
         assert (
@@ -238,6 +255,14 @@ def test_login_rate_limit(raw_client, config):
             "/api/v1/auth/login", json={"username": "admin", "password": "correct horse 123!"}
         ).status_code
         == 429
+    )
+
+    rate_clock.now += 300
+    assert (
+        raw_client.post(
+            "/api/v1/auth/login", json={"username": "admin", "password": "correct horse 123!"}
+        ).status_code
+        == 200
     )
 
 
