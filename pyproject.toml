@@ -17,6 +17,12 @@ dependencies = [
  "httpx>=0.27,<1", "httpcore>=1.0,<1.1", "cryptography>=43,<51", "argon2-cffi>=23,<26",
  "platformdirs>=4,<5", "filelock>=4.2.1,<5", "jinja2>=3.1.6,<4"
 ]
+[project.urls]
+Homepage = "https://github.com/simtiaz019/NotiDeck"
+Repository = "https://github.com/simtiaz019/NotiDeck"
+Issues = "https://github.com/simtiaz019/NotiDeck/issues"
+Documentation = "https://github.com/simtiaz019/NotiDeck/tree/main/docs"
+
 [project.optional-dependencies]
 postgres = ["psycopg[binary]>=3.2,<4"]
 mysql = ["pymysql>=1.1,<2"]

@@ -1,5 +1,7 @@
 name: Release
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       target:
@@ -9,6 +11,9 @@ on:
         options: [testpypi, pypi]
 permissions:
   contents: read
+concurrency:
+  group: release-${{ github.ref }}-${{ inputs.target || 'pypi' }}
+  cancel-in-progress: false
 jobs:
   checks:
     uses: ./.github/workflows/ci.yml
@@ -31,7 +36,7 @@ jobs:
       - run: mypy src/notideck
       - run: pytest
       - name: Require matching version tag for production PyPI
-        if: inputs.target == 'pypi'
+        if: github.event_name == 'push' || inputs.target == 'pypi'
         run: |
           test "$GITHUB_REF_TYPE" = tag
           test "$GITHUB_REF_NAME" = "v$(python -c 'from notideck import __version__; print(__version__)')"
@@ -45,7 +50,9 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
-    environment: ${{ inputs.target }}
+    environment:
+      name: ${{ inputs.target || 'pypi' }}
+      url: ${{ inputs.target == 'testpypi' && 'https://test.pypi.org/project/notideck/' || 'https://pypi.org/project/notideck/' }}
     permissions:
       id-token: write
     steps:
@@ -57,5 +64,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-      - if: inputs.target == 'pypi'
+      - if: github.event_name == 'push' || inputs.target == 'pypi'
         uses: pypa/gh-action-pypi-publish@release/v1
