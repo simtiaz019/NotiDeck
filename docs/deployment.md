@@ -43,7 +43,7 @@ can start before readiness. Readiness at `/api/v1/health/ready` additionally che
 database reachability and completed initialization. Worker health comes from persisted
 heartbeats; stale records are shown as unhealthy, not silently reported alive.
 
-The candidate image was built locally. `tests/docker_smoke.py` tests a disposable volume,
+`tests/docker_smoke.py` tests a disposable volume,
 non-root execution, setup, persistent restart and real worker HTTP delivery.
 
 ## Reverse proxy and HTTPS

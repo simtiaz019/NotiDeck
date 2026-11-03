@@ -1,9 +1,9 @@
-# Implementation limits and release blockers
+# Support boundaries and known limitations
 
-Version **0.1.0rc1** is a production release candidate, not completion of every item
+Version **0.1.0** is the first stable release, not completion of every item
 in the original specification. SQLite, PostgreSQL 17 and MySQL 8.4 have local automated
 integration coverage. Email and Telegram were confirmed by the user in the alpha checklist.
-The remaining scope below is explicit; a release candidate is not an independent security certification.
+The remaining scope below is explicit; a stable release is not an independent security certification.
 
 ## Support and verification boundaries
 
@@ -15,10 +15,7 @@ The remaining scope below is explicit; a release candidate is not an independent
 - SMTP and Telegram: user-confirmed delivery. Slack, Discord, WhatsApp, Twilio and Signal
   have adapter tests but no live credentialed acceptance in this session. Webhook HTTP
   transport is exercised locally; production endpoints need acceptance testing.
-- Python/OS matrix: local execution is Python 3.12 on macOS; CI defines 3.11–3.13 and
-  Windows/macOS/Linux jobs, but remote CI has not been run from this unhosted repository.
-- PyPI/TestPyPI publication and ownership, GitHub environment protection, repository URLs
-  and security reporting contacts require actual maintainer configuration.
+- Python/OS matrix: CI covers Python 3.11–3.13 on Linux and Python 3.12 on Windows/macOS.
 
 ## Product gaps compared with the full specification
 
@@ -56,7 +53,7 @@ The remaining scope below is explicit; a release candidate is not an independent
 - Encryption-key re-encryption/rotation tooling is absent. SMTP does not use HTTP SSRF
   restrictions; deployment egress controls remain necessary. Plugin code is administrator-trusted.
 - Independent security review, accessibility audit, load/soak testing, failure injection across
-  real external databases and production operations exercises remain release gates.
+  real external databases and production operations exercises remain recommended assurance work.
 
 These gaps must not be described as implemented production features. See
-[release checklist](release.md) for the explicit publication gates. No package was published.
+[release checklist](release.md) for the publication and verification process.

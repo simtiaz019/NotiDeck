@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.1.0rc2 — unreleased
+## 0.1.0 — 2026-11-03
+
+- Publish the first stable NotiDeck release.
+- Add complete PyPI and Docker installation, startup, upgrade, and uninstall guidance.
+- Promote package, console, and release metadata from 0.1.0rc2 to 0.1.0.
+- Retain the queue, database, security, and provider hardening validated in the release candidates.
+
+## 0.1.0rc2 — 2026-10-26
 
 - Redesign the PyPI/GitHub README around installation, first delivery and operational use.
 - Replace the unsupported Mermaid block with a static PNG flowchart and link all documentation/images with absolute URLs.
@@ -19,7 +26,7 @@ Production release candidate; final maintainer acceptance and publication pendin
 - Raise the filelock minimum to the audited patched series; remove the Docker wheel version hardcode.
 - Gate release on the full CI matrix, live database checks, browser workflow and real Docker delivery smoke.
 
-## 0.1.0 — original local alpha (not published)
+## Original local alpha (not published)
 
 - Verify the bootstrap token on the Welcome step before database configuration. Trim
   surrounding whitespace and distinguish setup tokens from source API keys in errors.

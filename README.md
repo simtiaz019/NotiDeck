@@ -10,9 +10,9 @@ from a web console, with your data stored in your own database.
 
 [Get started](#quick-start) · [Documentation](https://github.com/simtiaz019/NotiDeck/tree/main/docs) · [GitHub](https://github.com/simtiaz019/NotiDeck) · [Report an issue](https://github.com/simtiaz019/NotiDeck/issues)
 
-**Release status:** NotiDeck is currently a pre-release. Install with `--pre` and review
+The current stable release is **0.1.0**. Review the
 [deployment guidance](https://github.com/simtiaz019/NotiDeck/blob/main/docs/deployment.md)
-before using it in production.
+before exposing a production installation.
 
 ## Quick start
 
@@ -29,7 +29,8 @@ Activate it on macOS/Linux with `source .venv/bin/activate`, or in Windows Power
 with `.venv\Scripts\Activate.ps1`. Then install and start NotiDeck:
 
 ```sh
-python -m pip install --pre notideck
+python -m pip install --upgrade pip
+python -m pip install notideck
 notideck serve
 ```
 
@@ -111,8 +112,8 @@ for provider requirements and configuration.
 | Database | Installation |
 | --- | --- |
 | SQLite | Included; use one worker thread and local storage |
-| PostgreSQL | `python -m pip install --pre "notideck[postgres]"` |
-| MySQL | `python -m pip install --pre "notideck[mysql]"` |
+| PostgreSQL | `python -m pip install "notideck[postgres]"` |
+| MySQL | `python -m pip install "notideck[mysql]"` |
 | Oracle | Experimental; see the [support boundaries](https://github.com/simtiaz019/NotiDeck/blob/main/docs/limitations.md) |
 
 PostgreSQL setup includes a TLS/SSL switch. Leave it unchecked for a server that does
@@ -139,6 +140,20 @@ The web port is bound to localhost. Keep the data volume and encryption key back
 `docker compose down -v` deletes the volume. See the
 [deployment guide](https://github.com/simtiaz019/NotiDeck/blob/main/docs/deployment.md)
 for PostgreSQL, HTTPS, supervision, and backups.
+
+## Uninstall
+
+Stop the server and worker, activate the same virtual environment, and run:
+
+```sh
+python -m pip uninstall notideck
+```
+
+This removes the Python package but deliberately keeps your database, configuration,
+encryption key, and notification history. Run `notideck doctor` before uninstalling to
+record the configuration directory. See the
+[installation guide](https://github.com/simtiaz019/NotiDeck/blob/main/docs/installation.md#uninstall-a-python-installation)
+for complete data removal and Docker uninstall commands.
 
 ## A console for everyday operations
 

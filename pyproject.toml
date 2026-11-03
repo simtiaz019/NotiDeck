@@ -4,13 +4,20 @@ build-backend = "hatchling.build"
 
 [project]
 name = "notideck"
-version = "0.1.0rc2"
+version = "0.1.0"
 description = "One Platform. Every Notification. Self-hosted notification routing and delivery."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 keywords = ["notifications", "queue", "fastapi", "self-hosted"]
-classifiers = ["Development Status :: 4 - Beta", "Programming Language :: Python :: 3", "Operating System :: OS Independent"]
+classifiers = [
+ "Development Status :: 5 - Production/Stable",
+ "Programming Language :: Python :: 3",
+ "Programming Language :: Python :: 3.11",
+ "Programming Language :: Python :: 3.12",
+ "Programming Language :: Python :: 3.13",
+ "Operating System :: OS Independent",
+]
 dependencies = [
  "fastapi>=0.115,<1", "uvicorn>=0.30,<1", "sqlalchemy>=2.0,<2.1",
  "alembic>=1.13,<2", "pydantic>=2.9,<3", "typer>=0.12,<1",

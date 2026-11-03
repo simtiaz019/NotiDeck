@@ -1,4 +1,38 @@
-# Release candidate validation
+# Validation evidence
+
+## Stable 0.1.0 — 2026-11-03
+
+The stable promotion changes release metadata, documentation, and rebuilt frontend assets;
+runtime queue/database behavior is unchanged from 0.1.0rc2. Final local release checks:
+
+| Gate | Result |
+| --- | --- |
+| Ruff and mypy | Pass |
+| Python 3.12 backend suite | 95 passed, 2 optional external-database tests skipped; 84% coverage |
+| Dependency audit | No known vulnerabilities in resolved dependencies |
+| Frontend unit tests and production build | 4 passed; build succeeded |
+| Real Chromium console smoke | Pass |
+| Wheel and sdist build plus Twine metadata check | Pass |
+| Clean-wheel install and end-to-end delivery smoke | Pass |
+| Fresh Docker build and disposable-volume delivery smoke | Pass |
+
+The clean-wheel test verifies version output, bundled UI, first-run setup, login, channel
+and route creation, authenticated ingestion, queue state, real worker HTTP delivery,
+attempt history, cancellation, and readiness. The Docker test verifies non-root execution,
+persistent restart, delivery, history, and graceful worker shutdown. The hosted release
+workflow repeats CI from a clean checkout before PyPI publication.
+
+Built artifact checksums from the final local validation build:
+
+```text
+1dd97837ac8c7f334bbbc61f3353accde46a2ede64d8bfd3575abbe9147ca6ee  notideck-0.1.0-py3-none-any.whl
+165566ef3ce4f6574f451eab98409e43c3b93eb173adcf21cf33100ead384e1e  notideck-0.1.0.tar.gz
+```
+
+GitHub Actions rebuilds artifacts, so its checksums may differ when build inputs or archive
+metadata differ; verify the hashes published by the release workflow for downloaded files.
+
+## Historical release-candidate validation
 
 Local execution on **2026-10-26**, macOS, Python 3.12, Node 26, Docker Desktop.
 Candidate: **0.1.0rc1**, schema revision **0002**. These are local results, not remote CI results.
