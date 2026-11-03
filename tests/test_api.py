@@ -38,6 +38,29 @@ def test_bootstrap_protected_and_restart_safe(raw_client, config):
     other.state.engine.dispose()
 
 
+def test_setup_selects_shared_log_directory(raw_client, config, tmp_path):
+    token = config.token_path.read_text()
+    rejected = raw_client.post(
+        "/api/v1/setup",
+        json={
+            "username": "admin",
+            "full_name": "Test Admin",
+            "email": "admin@example.test",
+            "password": "correct horse 123!",
+            "confirm_password": "correct horse 123!",
+            "log_directory": "relative/logs",
+        },
+        headers={"X-Bootstrap-Token": token},
+    )
+    assert rejected.status_code == 422
+    selected = tmp_path / "component-logs"
+    result = initialize(raw_client, config, log_directory=str(selected))
+    assert result.status_code == 200, result.text
+    assert config.log_dir == selected
+    assert (selected / "server.log").is_file()
+    assert '"event": "request"' in (selected / "server.log").read_text(encoding="utf-8")
+
+
 def test_authentication_csrf_and_secrets(client, app, scenario):
     assert (
         client.post("/api/v1/sources", json={"name": "no-csrf"}, headers={"X-CSRF-Token": ""}).status_code

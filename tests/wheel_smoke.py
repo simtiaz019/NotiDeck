@@ -176,8 +176,13 @@ def main():
                 assert request("/api/v1/queue/clear", {"confirm": True})["affected"] == 1
                 assert request("/api/v1/notifications")["total"] == 2
                 assert request("/api/v1/health/ready")["status"] == "ready"
+                server_log = (directory / "config/logs/server.log").read_text(encoding="utf-8")
+                worker_log = (directory / "config/logs/worker.log").read_text(encoding="utf-8")
+                assert '"event": "request"' in server_log
+                assert '"event": "worker_started"' in worker_log
+                assert '"event": "delivery_attempt"' in worker_log
                 print(
-                    "PASS: clean wheel install, bundled UI, setup, login, channel, route, ingestion, real worker HTTP delivery, history, queue cancellation"
+                    "PASS: clean wheel install, bundled UI, setup, component logs, login, channel, route, ingestion, real worker HTTP delivery, history, queue cancellation"
                 )
             finally:
                 try:

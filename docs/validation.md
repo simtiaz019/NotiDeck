@@ -1,5 +1,22 @@
 # Validation evidence
 
+## Logging patch 0.1.1 — 2026-11-03
+
+| Gate | Result |
+| --- | --- |
+| Ruff and mypy | Pass |
+| Python 3.12 backend suite | 97 passed, 2 optional external-database tests skipped; 84% coverage |
+| Dependency audit | No known vulnerabilities in resolved dependencies |
+| Frontend unit tests and production build | 5 passed; build succeeded |
+| Real Chromium console smoke | Pass |
+| Wheel/sdist build, Twine check, and clean-wheel smoke | Pass |
+| Fresh Docker build and persistent component-log smoke | Pass |
+
+The wheel and Docker checks verify separate `server.log` and `worker.log` files, expected
+request/worker/delivery events, restart persistence, and graceful worker shutdown. POSIX
+unit coverage verifies private `0600` files; setup coverage verifies absolute-path validation
+and switching the running server to the selected directory.
+
 ## Stable 0.1.0 — 2026-11-03
 
 The stable promotion changes release metadata, documentation, and rebuilt frontend assets;

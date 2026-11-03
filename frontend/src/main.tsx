@@ -252,6 +252,7 @@ export function Setup({ onDone }: { onDone: () => void }) {
     retention_days: 90,
     max_attempts: 5,
     retry_base: 10,
+    log_directory: "",
   });
   const set = (key: string, v: any) => setValue({ ...value, [key]: v });
   const db = (key: string, v: any) => {
@@ -357,7 +358,7 @@ export function Setup({ onDone }: { onDone: () => void }) {
           <p className="muted">
             {
               [
-                "Let’s set up your notification workspace. Version 0.1.0.",
+                "Let’s set up your notification workspace. Version 0.1.1.",
                 "Your notifications and delivery queue live here.",
                 "No default credentials. This account will manage your workspace.",
                 "Choose the defaults for your installation.",
@@ -541,6 +542,7 @@ export function Setup({ onDone }: { onDone: () => void }) {
                 "retention_days",
                 "max_attempts",
                 "retry_base",
+                "log_directory",
               ].map((k) => (
                 <Field
                   key={k}
@@ -548,7 +550,12 @@ export function Setup({ onDone }: { onDone: () => void }) {
                   value={value[k]}
                   onChange={(v) => set(k, v)}
                   type={typeof value[k] === "number" ? "number" : "text"}
-                  required
+                  required={k !== "log_directory"}
+                  help={
+                    k === "log_directory"
+                      ? "Optional absolute path. Leave blank for the secure application data directory/logs (Docker: /data/logs)."
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -570,6 +577,12 @@ export function Setup({ onDone }: { onDone: () => void }) {
               <p>
                 <span>Retention</span>
                 <strong>{value.retention_days} days</strong>
+              </p>
+              <p>
+                <span>Logs</span>
+                <strong>
+                  {value.log_directory || "Application data directory/logs"}
+                </strong>
               </p>
               <p>
                 Initialization applies migrations and creates your account.
@@ -1348,6 +1361,8 @@ function SettingsPage() {
       <h2>Workspace settings</h2>
       <p className="muted">
         Database: {q.data?.database} · Version {q.data?.version}
+        <br />
+        Logs: {q.data?.log_directory}
       </p>
       <form
         onSubmit={async (e) => {
@@ -1589,7 +1604,7 @@ export function Console({
             <strong>{page}</strong>
           </div>
           <span className="version">
-            <span /> NotiDeck 0.1.0
+            <span /> NotiDeck 0.1.1
           </span>
           <div className="mobile-tools">
             <button

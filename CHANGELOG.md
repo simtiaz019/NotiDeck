@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 — 2026-11-03
+
+- Write server and worker diagnostics to separate rotating log files while retaining console output.
+- Add an optional absolute log directory to first-run setup, with a secure data-directory default.
+- Support `NOTIDECK_LOG_DIR` for existing installations and deployment-managed configuration.
+
 ## 0.1.0 — 2026-11-03
 
 - Publish the first stable NotiDeck release.

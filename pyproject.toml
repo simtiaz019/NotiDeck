@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "notideck"
-version = "0.1.0"
+version = "0.1.1"
 description = "One Platform. Every Notification. Self-hosted notification routing and delivery."
 readme = "README.md"
 requires-python = ">=3.11"

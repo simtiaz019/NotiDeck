@@ -33,6 +33,7 @@ class SetupInput(Strict):
     retention_days: int = Field(default=90, ge=1, le=3650)
     max_attempts: int = Field(default=5, ge=1, le=20)
     retry_base: int = Field(default=10, ge=1, le=3600)
+    log_directory: str | None = Field(default=None, max_length=4096)
 
 
 class Login(Strict):

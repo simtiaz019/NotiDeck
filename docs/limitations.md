@@ -1,6 +1,6 @@
 # Support boundaries and known limitations
 
-Version **0.1.0** is the first stable release, not completion of every item
+Version **0.1.1** is a stable patch release, not completion of every item
 in the original specification. SQLite, PostgreSQL 17 and MySQL 8.4 have local automated
 integration coverage. Email and Telegram were confirmed by the user in the alpha checklist.
 The remaining scope below is explicit; a stable release is not an independent security certification.

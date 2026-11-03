@@ -42,13 +42,13 @@ The production workflow rejects a tag that does not match the package version. N
 rename a release-candidate archive or reuse a version already uploaded to PyPI; package
 files are immutable.
 
-## Publish 0.1.0
+## Publish 0.1.1
 
 After the final release commit is green on `main`:
 
 ```sh
-git tag -a v0.1.0 -m "NotiDeck 0.1.0"
-git push origin v0.1.0
+git tag -a v0.1.1 -m "NotiDeck 0.1.1"
+git push origin v0.1.1
 ```
 
 The tag triggers `.github/workflows/release.yml`. Follow its progress at
@@ -61,7 +61,7 @@ After success, verify the public artifact rather than a local wheel:
 python -m venv .release-smoke
 source .release-smoke/bin/activate
 python -m pip install --upgrade pip
-python -m pip install "notideck==0.1.0"
+python -m pip install "notideck==0.1.1"
 notideck --version
 python -m pip uninstall -y notideck
 deactivate

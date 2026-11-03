@@ -121,10 +121,16 @@ def main():
         assert deliveries[0]["attempt_history"][0]["success"]
         assert received[0]["title"] == "Docker smoke"
         docker("stop", "--time", "45", worker)
+        server_log = docker("exec", web, "cat", "/data/logs/server.log")
+        worker_log = docker("run", "--rm", *common, "--entrypoint", "cat", "notideck:rc-test", "/data/logs/worker.log")
+        assert '"event": "request"' in server_log
+        assert '"event": "worker_started"' in worker_log
+        assert '"event": "worker_stopped"' in worker_log
+        assert '"event": "delivery_attempt"' in worker_log
         assert not any(w["healthy"] for w in request("/api/v1/queue/stats")["workers"])
         assert request("/api/v1/health/ready")["status"] == "ready"
         print(
-            "PASS: non-root Docker, setup, persistent queued event after restart, real HTTP delivery, history, graceful worker shutdown"
+            "PASS: non-root Docker, setup, persistent component logs, queued event after restart, real HTTP delivery, history, graceful worker shutdown"
         )
     finally:
         for container in [worker, web]:

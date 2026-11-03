@@ -18,6 +18,7 @@ from sqlalchemy import func, select, update
 
 from notideck.database import engine_for, schema_current, sessions
 from notideck.database.models import Attempt, Channel, Delivery, Worker
+from notideck.logging_config import configure_logging
 from notideck.providers import Result, registry
 from notideck.services import settings, update_aggregate
 
@@ -229,6 +230,7 @@ def process_one(factory, config, providers, worker_id="local"):
 
 
 def run(config, concurrency=1, stop=None):
+    configure_logging(config, "worker")
     if not config.database_url:
         raise RuntimeError("Complete setup before starting a worker")
     engine = engine_for(config.database_url)
@@ -242,6 +244,7 @@ def run(config, concurrency=1, stop=None):
             signal.signal(sig, lambda *_: stop.set())
     factory, providers = sessions(engine), registry()
     worker_id = str(uuid.uuid4())
+    log.info(json.dumps({"event": "worker_started", "worker_id": worker_id, "concurrency": concurrency}))
     with factory() as db:
         db.add(Worker(id=worker_id, heartbeat=time.time(), processed=0))
         db.commit()
@@ -277,3 +280,4 @@ def run(config, concurrency=1, stop=None):
             db.execute(update(Worker).where(Worker.id == worker_id).values(heartbeat=0))
             db.commit()
         engine.dispose()
+        log.info(json.dumps({"event": "worker_stopped", "worker_id": worker_id}))

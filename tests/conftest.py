@@ -22,16 +22,18 @@ def raw_client(app):
         app.state.engine.dispose()
 
 
-def initialize(client, config):
+def initialize(client, config, **changes):
+    body = {
+        "username": "admin",
+        "full_name": "Test Admin",
+        "email": "admin@example.test",
+        "password": "correct horse 123!",
+        "confirm_password": "correct horse 123!",
+    }
+    body.update(changes)
     return client.post(
         "/api/v1/setup",
-        json={
-            "username": "admin",
-            "full_name": "Test Admin",
-            "email": "admin@example.test",
-            "password": "correct horse 123!",
-            "confirm_password": "correct horse 123!",
-        },
+        json=body,
         headers={"X-Bootstrap-Token": config.token_path.read_text()},
     )
 

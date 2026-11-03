@@ -4,6 +4,7 @@
 | --- | --- |
 | NOTIDECK_CONFIG_DIR | Private config, bootstrap token and local master key directory |
 | NOTIDECK_DATA_DIR | Default SQLite database directory |
+| NOTIDECK_LOG_DIR | Server and worker log directory; overrides setup and the default |
 | NOTIDECK_MASTER_KEY | External Fernet key; overrides locally generated key |
 | NOTIDECK_DATABASE_URL | SQLAlchemy URL; overrides encrypted saved URL |
 | NOTIDECK_SECURE_COOKIES | `1` forces Secure cookies; required behind TLS termination |
@@ -19,6 +20,20 @@ The UI stores application name, base URL, display time zone, retention days, max
 attempts and base retry delay in the database. Provider timeout is 1–30 seconds.
 Worker concurrency is a process/CLI setting, not a dynamically resized pool.
 Database connection settings cannot be changed through the initialized public setup API.
+
+## Diagnostic logs
+
+The server writes `server.log` and the worker writes `worker.log`. The setup wizard accepts
+an optional absolute directory shared by both components. Leaving it blank uses `logs`
+inside `NOTIDECK_DATA_DIR` (or the platform application data directory); Docker therefore
+uses `/data/logs`. `NOTIDECK_LOG_DIR` takes precedence for deployment-managed paths and is
+also the way to change the location for an existing installation.
+
+Each file rotates at 10 MiB and keeps five backups. Terminal/container output remains
+enabled. Log files contain request IDs, delivery IDs, status, timings, and operational
+errors, but deliberately omit request bodies, credentials, tokens, and notification text.
+Treat logs as private operational data and include both component files when investigating
+an incident.
 
 ## Database targets
 

@@ -10,7 +10,7 @@ from a web console, with your data stored in your own database.
 
 [Get started](#quick-start) · [Documentation](https://github.com/simtiaz019/NotiDeck/tree/main/docs) · [GitHub](https://github.com/simtiaz019/NotiDeck) · [Report an issue](https://github.com/simtiaz019/NotiDeck/issues)
 
-The current stable release is **0.1.0**. Review the
+The current stable release is **0.1.1**. Review the
 [deployment guidance](https://github.com/simtiaz019/NotiDeck/blob/main/docs/deployment.md)
 before exposing a production installation.
 
@@ -38,7 +38,8 @@ notideck serve
 
 Open **http://127.0.0.1:8000**. The terminal prints the location of your private
 `bootstrap.token` file. Copy its contents into the setup wizard, choose your database,
-and create your administrator account. Keep this token private; it is different from a source API key.
+create your administrator account, and optionally choose an absolute log directory. Keep
+the token private; it is different from a source API key.
 
 **3. Start delivery processing**
 
@@ -50,6 +51,9 @@ notideck worker
 
 Leave both processes running: the server receives events and serves the console;
 the worker sends queued notifications.
+
+By default, diagnostic logs are written under the application data directory as
+`logs/server.log` and `logs/worker.log`. Both files rotate at 10 MiB with five backups.
 
 ## What you can do
 

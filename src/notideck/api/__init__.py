@@ -10,6 +10,7 @@ import secrets
 import time
 import uuid
 from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 from importlib.resources import files
 from urllib.parse import urlsplit
@@ -44,6 +45,7 @@ from notideck.database.models import (
     User,
     Worker,
 )
+from notideck.logging_config import configure_logging
 from notideck.providers import registry
 from notideck.template_library import install_database_templates
 from notideck.routing import render
@@ -122,6 +124,7 @@ def database_url(config, value: DatabaseInput):
 
 def create_app(config: Config | None = None):
     config = config or Config()
+    configure_logging(config, "server")
     app = FastAPI(
         title="NotiDeck", version=__version__, docs_url=None, redoc_url=None, openapi_url="/api/openapi.json"
     )
@@ -357,6 +360,13 @@ def create_app(config: Config | None = None):
         ZoneInfo(value.timezone)
         if urlsplit(value.base_url).scheme not in {"http", "https"}:
             raise ValueError("Base URL must use HTTP or HTTPS")
+        if value.log_directory:
+            requested_log_directory = Path(value.log_directory).expanduser()
+            if not requested_log_directory.is_absolute():
+                raise HTTPException(422, "Log directory must be an absolute path")
+            log_directory = str(requested_log_directory)
+        else:
+            log_directory = None
         with config.lock:
             if initialized():
                 raise HTTPException(409, "Setup already completed")
@@ -370,6 +380,13 @@ def create_app(config: Config | None = None):
                         raise HTTPException(409, "Selected database already contains an installation")
                     # Save connection before committing initialization: a crash can always reconnect.
                     config.save_database(url)
+                    try:
+                        config.save_log_directory(log_directory)
+                        configure_logging(config, "server")
+                    except OSError:
+                        raise HTTPException(
+                            422, "Log directory cannot be created or written by the NotiDeck process"
+                        ) from None
                     user = User(
                         username=value.username,
                         full_name=value.full_name,
@@ -1079,6 +1096,7 @@ def create_app(config: Config | None = None):
             **settings(db),
             "database": db.bind.dialect.name,
             "version": __version__,
+            "log_directory": str(config.log_dir),
         }
 
     @app.patch(prefix + "/settings")

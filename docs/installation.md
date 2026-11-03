@@ -48,8 +48,8 @@ notideck serve
 
 Open <http://127.0.0.1:8000>. The terminal shows the path to the private
 `bootstrap.token` file. Read that file locally, paste the token into the setup wizard,
-choose the database, and create the first administrator. The token is not a source API key
-and must not be shared.
+choose the database, create the first administrator, and optionally choose an absolute log
+directory. The token is not a source API key and must not be shared.
 
 The default configuration/data directory is usually:
 
@@ -59,6 +59,20 @@ The default configuration/data directory is usually:
 
 `NOTIDECK_CONFIG_DIR` and `NOTIDECK_DATA_DIR` override these locations. The
 `notideck doctor` command prints the effective configuration directory and verifies the database.
+
+If the setup log directory is left blank, both components use a `logs` directory inside
+the application data directory. The server writes `server.log`; the worker writes
+`worker.log`. Override both with `NOTIDECK_LOG_DIR=/absolute/path`.
+
+To locate and follow the files during an investigation:
+
+```sh
+notideck doctor
+tail -f /path/printed/by/doctor/server.log /path/printed/by/doctor/worker.log
+```
+
+On Windows PowerShell, use `Get-Content -Wait` for each file. Logs rotate at 10 MiB and
+retain five backups per component.
 
 ### Start notification delivery
 
@@ -113,6 +127,9 @@ wizard. Then start the worker:
 docker compose up --build -d worker
 docker compose ps
 ```
+
+Container logs are available through both `docker compose logs web worker` and the
+persistent `/data/logs/server.log` and `/data/logs/worker.log` files.
 
 Do not run `docker compose down -v` during normal operation: `-v` deletes the named data
 volume and the SQLite installation stored in it.
@@ -207,9 +224,12 @@ Create a private JSON file matching `SetupInput` in the OpenAPI schema. For exam
   "full_name": "Your Administrator",
   "email": "your-address@example.com",
   "password": "REPLACE-WITH-A-UNIQUE-STRONG-PASSWORD",
-  "confirm_password": "REPLACE-WITH-A-UNIQUE-STRONG-PASSWORD"
+  "confirm_password": "REPLACE-WITH-A-UNIQUE-STRONG-PASSWORD",
+  "log_directory": "/absolute/private/path/to/notideck-logs"
 }
 ```
+
+`log_directory` is optional; omit it to use the application data directory's `logs` folder.
 
 Set its permissions to `0600` on Unix-like systems and run:
 

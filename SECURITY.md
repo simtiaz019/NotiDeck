@@ -1,6 +1,6 @@
 # Security policy
 
-NotiDeck 0.1.0 has not had an independent security audit. Do not expose setup or the
+NotiDeck 0.1.x has not had an independent security audit. Do not expose setup or the
 application directly to the public internet. Read docs/security.md.
 
 For vulnerabilities, use GitHub's private vulnerability reporting for this repository.

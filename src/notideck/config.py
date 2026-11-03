@@ -52,6 +52,20 @@ class Config:
         self.values["database_url"] = self.encrypt(url)
         private_write(self.path, json.dumps(self.values))
 
+    def save_log_directory(self, directory: str | None):
+        if directory:
+            path = Path(directory).expanduser()
+            if not path.is_absolute():
+                raise ValueError("Log directory must be an absolute path")
+            path.mkdir(mode=0o700, parents=True, exist_ok=True)
+            if os.name != "nt":
+                path.chmod(0o700)
+            self.values["log_directory"] = str(path)
+        else:
+            self.values.pop("log_directory", None)
+            self.log_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        private_write(self.path, json.dumps(self.values))
+
     def encrypt(self, value: str) -> str:
         return self.cipher.encrypt(value.encode()).decode()
 
@@ -63,3 +77,13 @@ class Config:
         path = Path(os.getenv("NOTIDECK_DATA_DIR", str(self.directory)))
         path.mkdir(mode=0o700, parents=True, exist_ok=True)
         return path
+
+    @property
+    def log_dir(self):
+        configured = os.getenv("NOTIDECK_LOG_DIR") or self.values.get("log_directory")
+        if configured:
+            path = Path(configured).expanduser()
+            if not path.is_absolute():
+                raise ValueError("Configured log directory must be an absolute path")
+            return path
+        return self.data_dir / "logs"

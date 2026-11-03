@@ -13,11 +13,17 @@ the same local database path. Do not put SQLite WAL databases on network filesys
 Multiple SQL-backed workers use conditional claims. Local PostgreSQL 17/MySQL 8.4 tests
 cover concurrent ingestion, competing claims, expired-lease recovery and recorded completion.
 
+Both processes should also share `NOTIDECK_LOG_DIR` when it is set. Without an override,
+NotiDeck writes `logs/server.log` and `logs/worker.log` below the application data directory.
+Files rotate at 10 MiB with five backups, while console output remains available to the
+service manager. Protect, collect, and retain both files according to your incident policy.
+
 ## Containers
 
 The Dockerfile builds React assets and a wheel, then installs the package into a Python
 3.12 slim image. The application runs as UID/GID 10001. Persistent `/data` stores the
 configuration and, for SQLite, the database. Keep it private and backed up.
+The shared volume also stores rotating component logs under `/data/logs`.
 
 ```sh
 docker compose up --build -d web

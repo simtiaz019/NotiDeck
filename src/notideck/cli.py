@@ -1,4 +1,3 @@
-import logging
 import multiprocessing
 import os
 from pathlib import Path
@@ -9,16 +8,11 @@ import uvicorn
 from notideck import __version__
 from notideck.config import Config
 from notideck.database import engine_for, migrate, schema_current
+from notideck.logging_config import configure_logging
 
 app = typer.Typer(no_args_is_help=True, invoke_without_command=True)
 db_app = typer.Typer()
 app.add_typer(db_app, name="db")
-
-
-def logs():
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-    logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
 @app.callback()
@@ -44,10 +38,11 @@ def serve(
     """Start Console and API. Embedded worker requires completed setup; restart after setup."""
     from notideck.api import create_app
 
-    logs()
     cfg = Config(config)
+    log_path = configure_logging(cfg, "server")
     typer.echo(f"NotiDeck Console: http://{host}:{port}")
     typer.echo(f"First-run token file (private): {cfg.token_path}")
+    typer.echo(f"Server log: {log_path}")
     process = None
     if embedded_worker:
         if not cfg.database_url:
@@ -55,7 +50,14 @@ def serve(
         process = multiprocessing.get_context("spawn").Process(target=embedded, args=(str(cfg.directory),))
         process.start()
     try:
-        uvicorn.run(create_app(cfg), host=host, port=port, access_log=False, proxy_headers=False)
+        uvicorn.run(
+            create_app(cfg),
+            host=host,
+            port=port,
+            access_log=False,
+            proxy_headers=False,
+            log_config=None,
+        )
     finally:
         if process:
             process.terminate()
@@ -69,14 +71,18 @@ def worker(concurrency: int = typer.Option(1, min=1, max=32), config: Path | Non
     """Run a separately supervised delivery worker."""
     from notideck.worker import run
 
-    logs()
-    run(Config(config), concurrency)
+    cfg = Config(config)
+    log_path = configure_logging(cfg, "worker")
+    typer.echo(f"Worker log: {log_path}")
+    run(cfg, concurrency)
 
 
 @app.command()
 def doctor(config: Path | None = None):
     cfg = Config(config)
     typer.echo(f"NotiDeck {__version__}; configuration directory: {cfg.directory}")
+    typer.echo(f"Server log: {cfg.log_dir / 'server.log'}")
+    typer.echo(f"Worker log: {cfg.log_dir / 'worker.log'}")
     if not cfg.database_url:
         typer.echo("Setup required. Start notideck serve and open Console.")
         raise typer.Exit(1)

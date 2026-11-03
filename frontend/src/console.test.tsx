@@ -89,6 +89,43 @@ describe("setup wizard", () => {
       screen.getByRole("heading", { name: "Create your administrator" }),
     ).toBeInTheDocument();
   });
+
+  it("offers an optional shared component log directory", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: true, json: async () => ({ connected: true }) })),
+    );
+    render(<Setup onDone={() => {}} />);
+    fireEvent.change(screen.getByLabelText("Bootstrap token"), {
+      target: { value: "local-token" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    await screen.findByRole("heading", { name: "Connect your database" });
+    fireEvent.click(screen.getByRole("button", { name: "Test connection" }));
+    await screen.findByRole("button", { name: "Connection verified" });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.change(screen.getByLabelText("Full Name"), {
+      target: { value: "Test Administrator" },
+    });
+    fireEvent.change(screen.getByLabelText("Username"), {
+      target: { value: "admin" },
+    });
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "admin@example.test" },
+    });
+    fireEvent.change(screen.getByLabelText("Password", { exact: true }), {
+      target: { value: "correct horse 123!" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm Password"), {
+      target: { value: "correct horse 123!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      await screen.findByRole("heading", { name: "Make it your own" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Log Directory")).not.toBeRequired();
+    expect(screen.getByText(/Docker: \/data\/logs/)).toBeInTheDocument();
+  });
 });
 
 describe("console permissions and navigation", () => {
